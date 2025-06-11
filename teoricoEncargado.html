@@ -1,0 +1,858 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Teórico - Encargado de Edificios y Dependencias</title>
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700&family=Roboto:wght@400;500&display=swap" rel="stylesheet">
+    <style>
+        /* ========================
+           Estilos globales y responsivos (“mobile-first”)
+           ======================== */
+        * {
+            box-sizing: border-box;
+        }
+        body, html {
+            margin: 0;
+            padding: 0;
+            font-family: 'Roboto', sans-serif;
+            background-color: #f0f0f0;
+            color: #333;
+        }
+        /* Simulación de vista móvil forzada */
+        body.force-mobile .quiz-container {
+            max-width: 360px !important; /* ancho típico móvil */
+            margin: 0 auto !important;
+            border: 2px dashed #005a9c; /* opcional, visualizar el contenedor */
+        }
+        /* Contenedor principal centrado y con padding */
+        .quiz-container {
+            width: 100%;
+            max-width: 800px;      /* en pantallas grandes no excede 800px */
+            margin: 0 auto;
+            padding: 16px;
+            background-color: #ffffff;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            transition: max-width 0.3s ease;
+        }
+        /* Encabezado de toggles */
+        .view-toggle-container {
+            width: 100%;
+            max-width: 800px;
+            margin: 16px auto 0 auto;
+            padding: 0 16px;
+            display: flex;
+            gap: 8px;
+            justify-content: flex-end;
+            box-sizing: border-box;
+        }
+        .view-toggle-container button {
+            padding: 6px 12px;
+            font-size: 0.9rem;
+            border: 1px solid #005a9c;
+            border-radius: 4px;
+            background-color: white;
+            color: #005a9c;
+            cursor: pointer;
+            transition: background-color 0.2s, color 0.2s;
+        }
+        .view-toggle-container button.active {
+            background-color: #005a9c;
+            color: white;
+        }
+        .view-toggle-container button:hover {
+            background-color: #e3f2fd;
+        }
+
+        h1 {
+            font-family: 'Montserrat', sans-serif;
+            font-size: 1.6rem; /* base móvil */
+            margin-bottom: 16px;
+            color: #005a9c;
+            text-align: center;
+        }
+        .info {
+            margin-bottom: 16px;
+            font-style: italic;
+            color: #666;
+            font-size: 0.9rem;
+        }
+        /* Temporizador */
+        #timer {
+            font-size: 1.2rem;
+            font-weight: bold;
+            color: #005a9c;
+            margin-bottom: 16px;
+            text-align: center;
+        }
+        /* Barra de progreso */
+        .progress-bar {
+            width: 100%;
+            height: 20px;
+            background-color: #ddd;
+            border-radius: 10px;
+            overflow: hidden;
+            margin-bottom: 16px;
+        }
+        .progress {
+            width: 0%;
+            height: 100%;
+            background-color: #005a9c;
+            transition: width 0.3s ease;
+        }
+        /* Preguntas y opciones */
+        .question {
+            margin-bottom: 20px;
+            display: none;
+        }
+        .question.active {
+            display: block;
+        }
+        .question p {
+            margin: 0 0 8px 0;
+            font-weight: 500;
+            font-size: 1rem;
+        }
+        .options {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            margin-top: 8px;
+        }
+        .option {
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: background-color 0.3s, border-color 0.3s;
+            font-size: 0.95rem;
+        }
+        .option:hover {
+            background-color: #f5f5f5;
+        }
+        .option.selected {
+            background-color: #e3f2fd;
+            border-color: #005a9c;
+        }
+        /* Botón siguiente/finalizar */
+        .button {
+            display: block;
+            width: 100%;
+            padding: 12px;
+            background-color: #005a9c;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 1rem;
+            margin-top: 16px;
+        }
+        .button:hover {
+            background-color: #004170;
+        }
+        .button:disabled {
+            background-color: #999;
+            cursor: default;
+        }
+        /* Resultado final */
+        .result {
+            margin-top: 20px;
+            padding: 20px;
+            background-color: #e3f2fd;
+            border-radius: 4px;
+            display: none;
+            font-size: 0.95rem;
+        }
+        .result h2 {
+            margin-top: 0;
+            font-family: 'Montserrat', sans-serif;
+            color: #005a9c;
+            font-size: 1.4rem;
+        }
+        .result p {
+            margin: 8px 0;
+        }
+        .result h3 {
+            margin: 16px 0 8px 0;
+            font-size: 1.1rem;
+            color: #333;
+        }
+        .result ul {
+            padding-left: 20px;
+            margin: 8px 0;
+        }
+        .result li {
+            margin-bottom: 8px;
+        }
+
+        /* ========================
+           Media queries para pantallas más anchas
+           ======================== */
+        @media (min-width: 480px) {
+            .quiz-container, .view-toggle-container {
+                padding: 20px;
+            }
+            h1 {
+                font-size: 1.8rem;
+            }
+            #timer {
+                font-size: 1.3rem;
+            }
+            .button {
+                font-size: 1.05rem;
+                padding: 12px 20px;
+            }
+        }
+        @media (min-width: 768px) {
+            h1 {
+                font-size: 2rem;
+            }
+            .quiz-container {
+                padding: 24px;
+            }
+            .info {
+                font-size: 1rem;
+            }
+            #timer {
+                font-size: 1.4rem;
+            }
+            .question p {
+                font-size: 1.05rem;
+            }
+            .option {
+                font-size: 1rem;
+            }
+            .button {
+                font-size: 1.1rem;
+                padding: 14px 24px;
+                width: auto;
+                min-width: 150px;
+                margin: 16px auto 0 auto;
+            }
+            .view-toggle-container {
+                max-width: 800px;
+                margin: 16px auto 0 auto;
+            }
+        }
+        @media (min-width: 1024px) {
+            h1 {
+                font-size: 2.2rem;
+            }
+            .quiz-container {
+                padding: 32px;
+            }
+            #timer {
+                font-size: 1.5rem;
+            }
+            .button {
+                padding: 14px 28px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Contenedor para botones de vista -->
+    <div class="view-toggle-container">
+        <button id="btnDesktop" class="active">Vista Escritorio</button>
+        <button id="btnMobile">Vista Móvil</button>
+    </div>
+
+    <div class="quiz-container">
+        <h1>Test Teórico - Encargado de Edificios y Dependencias</h1>
+        <div class="info">
+            <p>Instrucciones:</p>
+            <ul>
+                <li>Cada respuesta correcta suma 1 punto.</li>
+                <li>Cada respuesta incorrecta resta 1/3 punto.</li>
+                <li>Las preguntas sin responder no suman ni restan.</li>
+                <li>Tienes 45 minutos para completar todo el test. Cuando el tiempo expire, se mostrará el resultado automáticamente.</li>
+            </ul>
+        </div>
+
+        <!-- Temporizador -->
+        <div id="timer">Tiempo restante: 45:00</div>
+
+        <!-- Barra de progreso -->
+        <div class="progress-bar">
+            <div class="progress"></div>
+        </div>
+
+        <!-- Contenedor de preguntas -->
+        <div id="questionContainer"></div>
+
+        <!-- Botón siguiente/finalizar -->
+        <button class="button" id="nextButton">Siguiente</button>
+
+        <!-- Resultado final -->
+        <div class="result" id="result"></div>
+    </div>
+
+    <script>
+        // ========================
+        // Toggle Vista Móvil / Escritorio
+        // ========================
+        const btnDesktop = document.getElementById('btnDesktop');
+        const btnMobile = document.getElementById('btnMobile');
+        btnDesktop.addEventListener('click', () => {
+            document.body.classList.remove('force-mobile');
+            btnDesktop.classList.add('active');
+            btnMobile.classList.remove('active');
+        });
+        btnMobile.addEventListener('click', () => {
+            document.body.classList.add('force-mobile');
+            btnMobile.classList.add('active');
+            btnDesktop.classList.remove('active');
+        });
+        // Por defecto ya está en Vista Escritorio (sin clase force-mobile)
+
+        // ========================
+        // Preguntas y lógica de quiz Teórico
+        // ========================
+        const questions = [
+            {
+                question: "1. El Grupo en el que están integradas las plazas de Encargados/as de Edificios y Dependencias del Ayuntamiento de Madrid es el establecido en:",
+                options: [
+                    "El Texto Refundido del Estatuto Básico del Empleado Público.",
+                    "El art. 76 de la Ley Reguladora de Bases de Régimen Local.",
+                    "El art. 76 del Acuerdo Convenio sobre Condiciones de Trabajo del Personal funcionario y laboral del Ayuntamiento de Madrid."
+                ],
+                correct: 0
+            },
+            {
+                question: "2. Los/as encargados/as de edificios y dependencias de Ayuntamiento de Madrid están encuadrados en:",
+                options: [
+                    "La subescala técnica.",
+                    "La subescala subalterna.",
+                    "La subescala de administración general."
+                ],
+                correct: 0
+            },
+            {
+                question: "3. Las plazas de encargado/as de edificios y dependencias del Ayuntamiento de Madrid corresponde al:",
+                options: [
+                    "Grupo C y D.",
+                    "Grupo C, subgrupo C1.",
+                    "Grupo C, subgrupo personal de oficios."
+                ],
+                correct: 1
+            },
+            {
+                question: "4. Los/as Oficiales de Edificios y Dependencias del Ayuntamiento de Madrid están encuadrados según el Texto Refundido del Estatuto Básico del Empleado Público en:",
+                options: [
+                    "La Subescala Subalterna.",
+                    "La Clase de Cometidos Especiales.",
+                    "A y B no son correctas."
+                ],
+                correct: 2
+            },
+            {
+                question: "5. La Resolución de 8 de marzo de 2017 del director general de Recursos Humanos establece que los/as Oficiales de Edificios y Dependencias se encuadran en:",
+                options: [
+                    "La Escala de Administración Especial, Subescala Subalterna.",
+                    "La Escala de Administración Especial.",
+                    "La Escala de Administración General."
+                ],
+                correct: 1
+            },
+            {
+                question: "6. En el Ayuntamiento de Madrid tienen atribuida la práctica de notificaciones de los actos administrativos adoptados por los distintos Órganos:",
+                options: [
+                    "Los/as Encargados/as de Edificios y Dependencias.",
+                    "Los/as Encargados/as de Edificios y Dependencias, los Oficiales de Edificios y Dependencias y el Personal de Oficios-Servicios Internos.",
+                    "Los/as Oficiales de Edificios y Dependencias y el Personal de Oficios-Servicios Internos."
+                ],
+                correct: 2
+            },
+            {
+                question: "7. Donde se encuentra ubicada la J.M del distrito Centro:",
+                options: [
+                    "Calle Mayor, 71.",
+                    "Calle Mayor, 83.",
+                    "Calle Mayor, 72."
+                ],
+                correct: 2
+            },
+            {
+                question: "8. Donde se encuentra ubicada la J.M de Moncloa-Aravaca:",
+                options: [
+                    "Calle de Francos Rodríguez, 77.",
+                    "Calle Velázquez, 52.",
+                    "Avenida de Arcentales, 28."
+                ],
+                correct: 0
+            },
+            {
+                question: "9. Donde se encuentra ubicada el Área de gobierno de Vicealcaldía, Portavoz de Seguridad y Emergencias del Ayuntamiento de Madrid:",
+                options: [
+                    "Plaza de la villa, 4.",
+                    "Calle Montalbán, 1.",
+                    "Calle Alfonso XII, 5."
+                ],
+                correct: 1
+            },
+            {
+                question: "10. El Área de Gobierno de Economía, Innovación y Hacienda, se encuentra ubicado en un distrito, diga cual:",
+                options: [
+                    "Distrito de Retiro.",
+                    "Distrito de Carabanchel.",
+                    "Distrito de Centro."
+                ],
+                correct: 2
+            },
+            {
+                question: "11. De acuerdo con lo dispuesto en el Acuerdo Convenio en vigor sobre condiciones de trabajo comunes al personal funcionario y laboral del Ayuntamiento de Madrid y de sus organismos autónomos, en las reuniones del Comité de Seguridad y Salud podrán participar hasta un máximo de dos Asesores/as por cada de las organizaciones sindicales representadas en el mismo, y los/as responsables técnicos/as de prevención de la Administración. Dicha participación podrá ser:",
+                options: [
+                    "Con voz y voto.",
+                    "Con voz, pero sin voto.",
+                    "Sin voz y sin voto."
+                ],
+                correct: 1
+            },
+            {
+                question: "14. Que se entiende por instalación eléctrica:",
+                options: [
+                    "Conjunto de aparatos para el funcionamiento la instalación eléctrica.",
+                    "Conjunto de aparatos de baja tensión.",
+                    "Conjunto de aparatos y de circuitos asociados en previsión de un fin particular: producción, conversión, transformación, transmisión, distribución o utilización de la energía eléctrica."
+                ],
+                correct: 2
+            },
+            {
+                question: "15. A que se denomina acometida en una instalación eléctrica:",
+                options: [
+                    "La parte de la instalación de la red de distribución que alimenta la caja o cajas generales de protección o unidad funcional equivalente.",
+                    "Al enlace de la caja general de protección, o cajas generales de protección.",
+                    "A y B son correctas."
+                ],
+                correct: 0
+            },
+            {
+                question: "16. La acometida es responsabilidad de:",
+                options: [
+                    "Es responsabilidad del cliente.",
+                    "Es responsabilidad de la empresa suministradora, que asumirá la inspección y verificación final.",
+                    "Es responsabilidad de la constructora de las viviendas."
+                ],
+                correct: 1
+            },
+            {
+                question: "17. Los simulacros de emergencia, ¿cada cuánto tiempo se tienen que realizar?:",
+                options: [
+                    "Cuando los considere oportuno el jefe de emergencias.",
+                    "Al menos una vez al año.",
+                    "La normativa indica cada dos años."
+                ],
+                correct: 1
+            },
+            {
+                question: "18. ¿Cuál es la longitud máxima de una manguera plana de las BIES?:",
+                options: [
+                    "20 Metros.",
+                    "30 Metros.",
+                    "10 Metros."
+                ],
+                correct: 0
+            },
+            {
+                question: "19. Según el Real Decreto 485/1997 sobre disposiciones mínimas en materia de seguridad y salud en el trabajo las señales de obligación serán de forma redonda y:",
+                options: [
+                    "Pictograma blanco sobre fondo azul.",
+                    "Pictograma rojo sobre fondo blanco.",
+                    "Pictograma rojo sobre fondo azul."
+                ],
+                correct: 0
+            },
+            {
+                question: "23. Según Reglamento Orgánico del Gobierno y de la Administración del Ayuntamiento de Madrid, el alcalde responde de su gestión política ante:",
+                options: [
+                    "El Pleno.",
+                    "La Junta de Gobierno.",
+                    "Los ciudadanos."
+                ],
+                correct: 0
+            },
+            {
+                question: "24. Según el artículo 13 del Reglamento Orgánico del Gobierno y de la Administración del Ayuntamiento de Madrid el alcalde podrá renunciar a su cargo:",
+                options: [
+                    "Perdiendo la condición de concejal.",
+                    "Sin perder la condición de concejal.",
+                    "Deberá hacerse por escrito ante la Junta de Gobierno."
+                ],
+                correct: 1
+            },
+            {
+                question: "25. En el Ayuntamiento de Madrid la Junta de Gobierno Local se denominará:",
+                options: [
+                    "Junta de Gobierno de la Capital de Madrid.",
+                    "Junta de Gobierno de la Ciudad de Madrid.",
+                    "Junta de Gobierno de Madrid."
+                ],
+                correct: 1
+            },
+            {
+                question: "26. Según el artículo 1, de la ordenanza de atención a la ciudadanía y administración electrónica, tiene por objeto:",
+                options: [
+                    "Regular la atención de los contribuyentes del Ayuntamiento de Madrid.",
+                    "Regular la atención a la ciudadanía en el Ayuntamiento de Madrid.",
+                    "Regular la atención a los vecinos en el Ayuntamiento de Madrid."
+                ],
+                correct: 1
+            },
+            {
+                question: "27. Según el artículo 6, de la ordenanza de atención a la ciudadanía y administración electrónica, la atención a la ciudadanía se regirá por el siguiente principio:",
+                options: [
+                    "Principio de igualdad.",
+                    "Principio de garantía.",
+                    "Principio de difusión de la información administrativa."
+                ],
+                correct: 2
+            },
+            {
+                question: "28. Según la Ordenanza de Atención a la Ciudadanía y Administración electrónica, el principio de actualización garantiza:",
+                options: [
+                    "La actualización de la información administrativa que sea accesible por canales electrónicos. En las publicaciones electrónicas constarán las fechas de actualización.",
+                    "Garantiza, en el acceso a la información de forma electrónica, la obtención de documentos con el contenido idéntico, veraz, exacto y fiel al equivalente en soporte papel o en el soporte en que se haya emitido el documento original.",
+                    "Garantiza la comunicación de forma fácil, directa, transparente, simple y eficaz de la información relevante para la ciudadanía."
+                ],
+                correct: 0
+            },
+            {
+                question: "29. De conformidad con el artículo 40, del Reglamento Orgánico del Gobierno y de la Administración del Ayuntamiento de Madrid, de 31 de mayo de 2004, de las Áreas de Gobierno:",
+                options: [
+                    "No podrán depender otras Áreas de Coordinación o Delegadas.",
+                    "Podrán depender otras Áreas de Coordinación o Delegadas a las que corresponderá la dirección de un sector de la actividad administrativa de la responsabilidad de aquéllas.",
+                    "Podrán depender otras Áreas Delegadas, pero no Áreas de coordinación."
+                ],
+                correct: 1
+            },
+            {
+                question: "30. De conformidad con el artículo 40, del Reglamento Orgánico del Gobierno y de la Administración del Ayuntamiento de Madrid, de 31 de mayo de 2004, en relación al número de Áreas de Gobierno:",
+                options: [
+                    "No podrán exceder de 10, correspondiendo al alcalde, al amparo de lo previsto en el artículo 123.1.c) en relación con las facultades que le atribuye el artículo 124.4.k) de la Ley 7/1985, de 2 de abril, determinar el número, denominación y atribuciones de las Áreas.",
+                    "Al alcalde le corresponde la determinación del número de áreas de gobierno sin limitación alguna en cuanto al número de áreas de gobierno totales.",
+                    "No podrán exceder de 15, correspondiendo al alcalde, al amparo de lo previsto en el artículo 123.1.c) en relación con las facultades que le atribuye el artículo 124.4.k) de la Ley 7/1985, de 2 de abril, determinar el número, denominación y atribuciones de las Áreas."
+                ],
+                correct: 2
+            },
+            {
+                question: "31. De conformidad con el artículo 41, del Reglamento Orgánico del Gobierno y de la Administración del Ayuntamiento de Madrid, de 31 de mayo de 2004:",
+                options: [
+                    "Las Secretarías Generales Técnicas podrán organizarse a su vez en Direcciones Generales. Estas unidades administrativas también podrán depender directamente de los coordinadores generales.",
+                    "Las Secretarías Generales Técnicas podrán organizarse a su vez en Direcciones Generales. Estas unidades administrativas no podrán depender directamente de los coordinadores generales.",
+                    "Las Secretarías Generales Técnicas y Direcciones Generales u órganos asimilados podrán organizarse a su vez en Subdirecciones Generales, Servicios, Departamentos, Secciones, y otras unidades inferiores o asimiladas. Estas unidades administrativas también podrán depender directamente de los coordinadores generales."
+                ],
+                correct: 2
+            },
+            {
+                question: "32. El Personal de Oficios, pertenece a la Subescala:",
+                options: [
+                    "Técnica de la Administración Especial.",
+                    "De Servicios Especiales.",
+                    "Administrativa."
+                ],
+                correct: 1
+            },
+            {
+                question: "33. Puede actuar como Agente Notificador:",
+                options: [
+                    "Cualquier funcionario.",
+                    "El Personal de Oficios Servicios Internos con acreditación personal.",
+                    "El Encargado de Edificios y Dependencias."
+                ],
+                correct: 1
+            },
+            {
+                question: "34. El encendido y apagado de los elementos calefactores y aire acondicionado de un edificio municipal corresponde:",
+                options: [
+                    "Al Personal de Oficios Servicios Internos.",
+                    "A la empresa de mantenimiento.",
+                    "Cualquier funcionario."
+                ],
+                correct: 0
+            },
+            {
+                question: "35. Según el Real Decreto 5/2015, de 30 de octubre, por el que se aprueba el Texto Refundido de la Ley del Estatuto Básico del Empleado Público, los derechos de los empleados públicos pueden ser:",
+                options: [
+                    "Derechos de carácter individual.",
+                    "Derechos individuales que se ejercen de forma colectiva.",
+                    "Ambas respuestas son correctas."
+                ],
+                correct: 2
+            },
+            {
+                question: "36. La promoción interna de los funcionarios de carrera:",
+                options: [
+                    "Se realizará mediante procesos selectivos que garanticen el cumplimiento de los principios constitucionales de igualdad, mérito y capacidad, así como los contemplados en el artículo 55.2 del Estatuto Básico del Empleado Público.",
+                    "Los funcionarios deberán poseer los requisitos exigidos para el ingreso, tener una antigüedad de, al menos, tres años de servicio activo en el inferior Subgrupo, o Grupo de clasificación profesional, en el supuesto de que éste no tenga Subgrupo y superar las correspondientes pruebas selectivas.",
+                    "Ambas respuestas son correctas."
+                ],
+                correct: 0
+            },
+            {
+                question: "37. Las leyes de Función Pública que se dicten en desarrollo del Estatuto Básico del Empleado Público regularán la carrera profesional aplicable en cada ámbito que podrán consistir, entre otras, en la aplicación aislada o simultánea de alguna o algunas de las siguientes modalidades:",
+                options: [
+                    "Carrera horizontal.",
+                    "Carrera vertical descendente.",
+                    "Carrera de grados."
+                ],
+                correct: 0
+            },
+            {
+                question: "38. La Ley Orgánica 3/2018, de 5 de diciembre, de Protección de Datos Personales tiene por objeto garantizar los derechos digitales de la ciudadanía conforme al mandato establecido en el artículo:",
+                options: [
+                    "18.4 de la Constitución.",
+                    "9.3 de la Constitución.",
+                    "29.1 de la Constitución."
+                ],
+                correct: 0
+            },
+            {
+                question: "39. Lo dispuesto en los Títulos I a IX y en los artículos 89 a 94, de la Ley Orgánica 3/2018, de 5 de diciembre, de Protección de Datos Personales y garantía de los derechos digitales, se aplica a:",
+                options: [
+                    "Cualquier tratamiento total o parcialmente automatizado de datos personales, así como al tratamiento no automatizado de datos personales contenidos o destinados a ser incluidos en un fichero.",
+                    "A los tratamientos de datos de personas fallecidas.",
+                    "Ambas son correctas."
+                ],
+                correct: 0
+            },
+            {
+                question: "40. Según el artículo 5.1, de la Ley Orgánica 3/2018, de 5 de diciembre, de Protección de Datos Personales y garantía de los derechos digitales, los responsables y encargados del tratamiento de datos, así como todas las personas que intervengan en cualquier fase de este tratamiento, estarán sujetas al deber de:",
+                options: [
+                    "Custodia.",
+                    "Confidencialidad.",
+                    "Transparencia."
+                ],
+                correct: 1
+            },
+            {
+                question: "44. El original para fotocopiar en el cristal de exposición de la fotocopiadora Ricoh (marca más común utilizada en los edificios municipales), ¿hasta qué tamaño máximo admite?:",
+                options: [
+                    "Din A-3.",
+                    "Din A-4.",
+                    "Din A-2."
+                ],
+                correct: 0
+            },
+            {
+                question: "45. Según el manual de la fotocopiadora Ricoh (marca más común utilizada en los edificios municipales), en referencia al mantenimiento de la máquina, la limpieza del cristal de exposición se realizará:",
+                options: [
+                    "Disolventes para pinturas o benceno.",
+                    "Un paño mojado en una disolución de agua y lejía.",
+                    "Un paño suave y húmedo."
+                ],
+                correct: 2
+            },
+            {
+                question: "46. Según el manual de la fotocopiadora Ricoh (marca más común utilizada en los edificios municipales), al cambiar la botella de tóner que no se debe hacer:",
+                options: [
+                    "Agitar la botella sustituida. El tóner restante podría esparcirse.",
+                    "No agitar la botella de tóner sustituida.",
+                    "Utilizar un tipo de tóner distinto al recomendado por el fabricante."
+                ],
+                correct: 0
+            },
+            {
+                question: "47. De acuerdo con lo establecido en la Ley 31/1995, de 8 de noviembre, de Prevención de Riesgos Laborales, en las empresas de 31 a 49 trabajadores, habrá:",
+                options: [
+                    "1 Delegado de Prevención.",
+                    "2 Delegados de Prevención.",
+                    "3 Delegados de Prevención."
+                ],
+                correct: 0
+            },
+            {
+                question: "48. De acuerdo con lo establecido en la Ley 31/1995, de 8 de noviembre, de Prevención de Riesgos Laborales, señale quién es el órgano paritario y colegiado de participación destinado a la consulta regular y periódica de las actuaciones de la empresa en materia de prevención de riesgos:",
+                options: [
+                    "Delegado de Prevención.",
+                    "Delegado Sindical.",
+                    "Comité de Seguridad y Salud."
+                ],
+                correct: 2
+            },
+            {
+                question: "49. El objeto de la Ley Orgánica 3/2007, de 22 de marzo, para la igualdad efectiva de mujeres y hombres, según lo dispuesto en la misma, es:",
+                options: [
+                    "Hacer efectivo el derecho de igualdad de trato entre mujeres y hombres.",
+                    "Hacer efectivo el derecho de igualdad de oportunidades entre mujeres y hombres.",
+                    "Hacer efectivo el derecho de igualdad de trato y de oportunidades entre mujeres y hombres."
+                ],
+                correct: 2
+            }
+        ];
+
+        let currentQuestion = 0;
+        let answers = new Array(questions.length).fill(null);
+
+        let timerInterval;
+        let timeLeft = 45 * 60; // segundos
+
+        function initializeQuiz() {
+            loadQuestion();
+            updateProgressBar();
+            document.getElementById('nextButton').addEventListener('click', handleNextButton);
+            startTimer();
+        }
+
+        function startTimer() {
+            updateTimerDisplay();
+            timerInterval = setInterval(() => {
+                timeLeft--;
+                if (timeLeft < 0) {
+                    clearInterval(timerInterval);
+                    document.getElementById('nextButton').disabled = true;
+                    showResults(true);
+                } else {
+                    updateTimerDisplay();
+                }
+            }, 1000);
+        }
+
+        function updateTimerDisplay() {
+            const minutes = Math.floor(timeLeft / 60);
+            const seconds = timeLeft % 60;
+            const mm = String(minutes).padStart(2, '0');
+            const ss = String(seconds).padStart(2, '0');
+            document.getElementById('timer').textContent = `Tiempo restante: ${mm}:${ss}`;
+        }
+
+        function loadQuestion() {
+            const container = document.getElementById('questionContainer');
+            const question = questions[currentQuestion];
+
+            // Mostrar letra A), B), C) antes del texto de la opción
+            let html = `
+                <div class="question active">
+                    <p>${question.question}</p>
+                    <div class="options">
+                        ${question.options.map((option, index) => {
+                            const letra = String.fromCharCode(65 + index); // 65='A'
+                            return `
+                                <div class="option ${answers[currentQuestion] === index ? 'selected' : ''}" onclick="selectOption(${index})">
+                                    <strong>${letra})</strong> ${option}
+                                </div>
+                            `;
+                        }).join('')}
+                    </div>
+                </div>
+            `;
+            container.innerHTML = html;
+        }
+
+        function selectOption(index) {
+            answers[currentQuestion] = index;
+            document.querySelectorAll('.option').forEach((optionEl, i) => {
+                optionEl.classList.toggle('selected', i === index);
+            });
+        }
+
+        function updateProgressBar() {
+            const progress = ((currentQuestion + 1) / questions.length) * 100;
+            document.querySelector('.progress').style.width = `${progress}%`;
+        }
+
+        function calculateScore() {
+            let score = 0;
+            answers.forEach((answer, index) => {
+                if (answer === null) return;
+                if (answer === questions[index].correct) {
+                    score += 1;
+                } else {
+                    score -= 1/3;
+                }
+            });
+            return Math.round(score * 100) / 100;
+        }
+
+        function handleNextButton() {
+            if (currentQuestion < questions.length - 1) {
+                currentQuestion++;
+                loadQuestion();
+                updateProgressBar();
+                if (currentQuestion === questions.length - 1) {
+                    document.getElementById('nextButton').textContent = 'Finalizar';
+                }
+            } else {
+                clearInterval(timerInterval);
+                showResults(false);
+            }
+        }
+
+        /**
+         * byTimeout: boolean, indica si se llama por fin de tiempo
+         */
+        function showResults(byTimeout) {
+            // Ocultar preguntas, botón, barra de progreso y temporizador
+            document.getElementById('questionContainer').style.display = 'none';
+            document.getElementById('nextButton').style.display = 'none';
+            document.getElementById('timer').style.display = 'none';
+            document.querySelector('.progress-bar').style.display = 'none';
+
+            const score = calculateScore();
+            const totalQuestions = questions.length;
+            // Nota sobre 10: normalizamos score / totalQuestions * 10, limitamos [0,10]
+            let rawNota = (score / totalQuestions) * 10;
+            if (isNaN(rawNota)) rawNota = 0;
+            if (rawNota < 0) rawNota = 0;
+            if (rawNota > 10) rawNota = 10;
+            const notaSobre10 = Math.round(rawNota * 100) / 100;
+
+            const correctCount = answers.filter((answer, index) => answer === questions[index].correct).length;
+            const incorrectIndices = answers
+                .map((answer, index) => (answer !== null && answer !== questions[index].correct) ? index : -1)
+                .filter(i => i >= 0);
+            const unansweredIndices = answers
+                .map((answer, index) => (answer === null) ? index : -1)
+                .filter(i => i >= 0);
+
+            const resultDiv = document.getElementById('result');
+            let html = `<h2>Resultado Final</h2>`;
+            if (byTimeout) {
+                html += `<p>El tiempo ha expirado. Se muestran los resultados obtenidos hasta ahora:</p>`;
+            }
+            html += `
+                <p>Tu puntuación: ${score} puntos</p>
+                <p>Nota sobre 10: ${notaSobre10} / 10</p>
+                <p>Respuestas correctas: ${correctCount}</p>
+                <p>Respuestas incorrectas: ${incorrectIndices.length}</p>
+                <p>Sin responder: ${unansweredIndices.length}</p>
+            `;
+
+            // Listar incorrectas
+            if (incorrectIndices.length > 0) {
+                html += `<div class="incorrect-list"><h3>Preguntas incorrectas:</h3><ul>`;
+                incorrectIndices.forEach(idx => {
+                    const q = questions[idx];
+                    const tuIdx = answers[idx];
+                    const tuRespuesta = q.options[tuIdx];
+                    const correcta = q.options[q.correct];
+                    const letraTu = String.fromCharCode(65 + tuIdx);
+                    const letraCorrecta = String.fromCharCode(65 + q.correct);
+                    html += `<li>
+                        <strong>Pregunta ${idx + 1}:</strong> ${q.question}<br>
+                        Tu respuesta: <strong>${letraTu})</strong> ${tuRespuesta}<br>
+                        Respuesta correcta: <strong>${letraCorrecta})</strong> ${correcta}
+                    </li>`;
+                });
+                html += `</ul></div>`;
+            }
+            // Listar sin responder
+            if (unansweredIndices.length > 0) {
+                html += `<div class="unanswered-list"><h3>Preguntas sin responder:</h3><ul>`;
+                unansweredIndices.forEach(idx => {
+                    const q = questions[idx];
+                    html += `<li><strong>Pregunta ${idx + 1}:</strong> ${q.question}</li>`;
+                });
+                html += `</ul></div>`;
+            }
+
+            resultDiv.innerHTML = html;
+            resultDiv.style.display = 'block';
+        }
+
+        // Iniciar quiz al cargar
+        initializeQuiz();
+    </script>
+</body>
+</html>

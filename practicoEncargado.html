@@ -1,0 +1,607 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Práctico - Encargado de Edificios y Dependencias</title>
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700&family=Roboto:wght@400;500&display=swap" rel="stylesheet">
+    <style>
+        /* ========================
+           Estilos globales y responsivos (“mobile-first”)
+           ======================== */
+        * {
+            box-sizing: border-box;
+        }
+        body, html {
+            margin: 0;
+            padding: 0;
+            font-family: 'Roboto', sans-serif;
+            background-color: #f0f0f0;
+            color: #333;
+        }
+        /* Simulación de vista móvil forzada */
+        body.force-mobile .quiz-container {
+            max-width: 360px !important; /* ancho típico móvil */
+            margin: 0 auto !important;
+            border: 2px dashed #005a9c; /* opcional, visualizar el contenedor */
+        }
+        /* Contenedor principal centrado y con padding */
+        .quiz-container {
+            width: 100%;
+            max-width: 800px;      /* en pantallas grandes no excede 800px */
+            margin: 0 auto;
+            padding: 16px;
+            background-color: #ffffff;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            transition: max-width 0.3s ease;
+        }
+        /* Encabezado de toggles */
+        .view-toggle-container {
+            width: 100%;
+            max-width: 800px;
+            margin: 16px auto 0 auto;
+            padding: 0 16px;
+            display: flex;
+            gap: 8px;
+            justify-content: flex-end;
+            box-sizing: border-box;
+        }
+        .view-toggle-container button {
+            padding: 6px 12px;
+            font-size: 0.9rem;
+            border: 1px solid #005a9c;
+            border-radius: 4px;
+            background-color: white;
+            color: #005a9c;
+            cursor: pointer;
+            transition: background-color 0.2s, color 0.2s;
+        }
+        .view-toggle-container button.active {
+            background-color: #005a9c;
+            color: white;
+        }
+        .view-toggle-container button:hover {
+            background-color: #e3f2fd;
+        }
+
+        h1 {
+            font-family: 'Montserrat', sans-serif;
+            font-size: 1.6rem; /* base móvil */
+            margin-bottom: 16px;
+            color: #005a9c;
+            text-align: center;
+        }
+        .info {
+            margin-bottom: 16px;
+            font-style: italic;
+            color: #666;
+            font-size: 0.9rem;
+        }
+        /* Temporizador */
+        #timer {
+            font-size: 1.2rem;
+            font-weight: bold;
+            color: #005a9c;
+            margin-bottom: 16px;
+            text-align: center;
+        }
+        /* Barra de progreso */
+        .progress-bar {
+            width: 100%;
+            height: 20px;
+            background-color: #ddd;
+            border-radius: 10px;
+            overflow: hidden;
+            margin-bottom: 16px;
+        }
+        .progress {
+            width: 0%;
+            height: 100%;
+            background-color: #005a9c;
+            transition: width 0.3s ease;
+        }
+        /* Preguntas y opciones */
+        .question {
+            margin-bottom: 20px;
+            display: none;
+        }
+        .question.active {
+            display: block;
+        }
+        .question p {
+            margin: 0 0 8px 0;
+            font-weight: 500;
+            font-size: 1rem;
+        }
+        .options {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            margin-top: 8px;
+        }
+        .option {
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: background-color 0.3s, border-color 0.3s;
+            font-size: 0.95rem;
+        }
+        .option:hover {
+            background-color: #f5f5f5;
+        }
+        .option.selected {
+            background-color: #e3f2fd;
+            border-color: #005a9c;
+        }
+        /* Botón siguiente/finalizar */
+        .button {
+            display: block;
+            width: 100%;
+            padding: 12px;
+            background-color: #005a9c;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 1rem;
+            margin-top: 16px;
+        }
+        .button:hover {
+            background-color: #004170;
+        }
+        .button:disabled {
+            background-color: #999;
+            cursor: default;
+        }
+        /* Resultado final */
+        .result {
+            margin-top: 20px;
+            padding: 20px;
+            background-color: #e3f2fd;
+            border-radius: 4px;
+            display: none;
+            font-size: 0.95rem;
+        }
+        .result h2 {
+            margin-top: 0;
+            font-family: 'Montserrat', sans-serif;
+            color: #005a9c;
+            font-size: 1.4rem;
+        }
+        .result p {
+            margin: 8px 0;
+        }
+        .result h3 {
+            margin: 16px 0 8px 0;
+            font-size: 1.1rem;
+            color: #333;
+        }
+        .result ul {
+            padding-left: 20px;
+            margin: 8px 0;
+        }
+        .result li {
+            margin-bottom: 8px;
+        }
+
+        /* ========================
+           Media queries para pantallas más anchas
+           ======================== */
+        @media (min-width: 480px) {
+            .quiz-container, .view-toggle-container {
+                padding: 20px;
+            }
+            h1 {
+                font-size: 1.8rem;
+            }
+            #timer {
+                font-size: 1.3rem;
+            }
+            .button {
+                font-size: 1.05rem;
+                padding: 12px 20px;
+            }
+        }
+        @media (min-width: 768px) {
+            h1 {
+                font-size: 2rem;
+            }
+            .quiz-container {
+                padding: 24px;
+            }
+            .info {
+                font-size: 1rem;
+            }
+            #timer {
+                font-size: 1.4rem;
+            }
+            .question p {
+                font-size: 1.05rem;
+            }
+            .option {
+                font-size: 1rem;
+            }
+            .button {
+                font-size: 1.1rem;
+                padding: 14px 24px;
+                width: auto;
+                min-width: 150px;
+                margin: 16px auto 0 auto;
+            }
+            .view-toggle-container {
+                max-width: 800px;
+                margin: 16px auto 0 auto;
+            }
+        }
+        @media (min-width: 1024px) {
+            h1 {
+                font-size: 2.2rem;
+            }
+            .quiz-container {
+                padding: 32px;
+            }
+            #timer {
+                font-size: 1.5rem;
+            }
+            .button {
+                padding: 14px 28px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Contenedor para botones de vista -->
+    <div class="view-toggle-container">
+        <button id="btnDesktop" class="active">Vista Escritorio</button>
+        <button id="btnMobile">Vista Móvil</button>
+    </div>
+
+    <div class="quiz-container">
+        <h1>Test Práctico - Encargado de Edificios y Dependencias</h1>
+        <div class="info">
+            <p>Instrucciones:</p>
+            <ul>
+                <li>Cada respuesta correcta suma 1 punto.</li>
+                <li>Cada respuesta incorrecta resta 1/3 punto.</li>
+                <li>Las preguntas sin responder no suman ni restan.</li>
+                <li>Tienes 20 minutos para completar todo el test. Cuando el tiempo expire, se mostrará el resultado automáticamente.</li>
+            </ul>
+        </div>
+
+        <!-- Temporizador -->
+        <div id="timer">Tiempo restante: 20:00</div>
+
+        <!-- Barra de progreso -->
+        <div class="progress-bar">
+            <div class="progress"></div>
+        </div>
+
+        <!-- Contenedor de preguntas -->
+        <div id="questionContainer"></div>
+
+        <!-- Botón siguiente/finalizar -->
+        <button class="button" id="nextButton">Siguiente</button>
+
+        <!-- Resultado final -->
+        <div class="result" id="result"></div>
+    </div>
+
+    <script>
+        // ========================
+        // Toggle Vista Móvil / Escritorio
+        // ========================
+        const btnDesktop = document.getElementById('btnDesktop');
+        const btnMobile = document.getElementById('btnMobile');
+        btnDesktop.addEventListener('click', () => {
+            document.body.classList.remove('force-mobile');
+            btnDesktop.classList.add('active');
+            btnMobile.classList.remove('active');
+        });
+        btnMobile.addEventListener('click', () => {
+            document.body.classList.add('force-mobile');
+            btnMobile.classList.add('active');
+            btnDesktop.classList.remove('active');
+        });
+        // Por defecto ya está en Vista Escritorio (sin clase force-mobile)
+
+        // ========================
+        // Preguntas y lógica de quiz Práctico (sin pregunta 6)
+        // ========================
+        const questions = [
+            {
+                question: "1. La Bandera de la Villa de Madrid ondeará en el exterior de todos los edificios municipales junto a:",
+                options: [
+                    "La Bandera Nacional y la de la Comunidad de Madrid, situándose a la izquierda de la Bandera Nacional.",
+                    "La Bandera Nacional.",
+                    "La Bandera de la Comunidad Autónoma de Madrid."
+                ],
+                correct: 0  // A)
+            },
+            {
+                question: "3. Según el Reglamento de Protocolo y Ceremonial, de 22 de diciembre de 1988, el Pendón de Madrid:",
+                options: [
+                    "Se situará en el despacho de la primera Autoridad municipal y los Tte. de alcalde.",
+                    "Alzado en mástil de plata, con las armas de la ciudad, bordadas sobre damasco carmesí, ocupará un lugar preferente en el despacho oficial de la primera Autoridad municipal y en aquellos actos en que por su excepcional importancia se determine su presencia.",
+                    "Ninguna de las respuestas anteriores es correcta."
+                ],
+                correct: 1  // B)
+            },
+            {
+                question: "4. En dicho acto solemne, será recibido un Jefe de Estado en visita oficial a la ciudad. La Corporación Municipal tiene que colocarse por el orden de precedencia interno, ¿Cómo estarán colocados?:",
+                options: [
+                    "El alcalde, los Tte. De alcalde, los Portavoces de los Grupos Políticos y los Señores Concejales de la Comisión Municipal de Gobierno.",
+                    "Los Tte. De alcalde, los Portavoces de los Grupos Políticos, y los Concejales.",
+                    "Los Concejales y los Portavoces de los Grupos Políticos."
+                ],
+                correct: 0  // A)
+            },
+            // PREGUNTA 6 ELIMINADA AQUÍ
+            {
+                question: "7. El encargado/da de Edificios y Dependencias es también el jefe de emergencia en el plan de emergencia y evacuación del edificio. En dicho plan hay un equipo encargado de ir a ver e informar inmediatamente de las posibles emergencias. ¿Qué equipo es el encargado de ir a revisarlas?:",
+                options: [
+                    "El equipo de 1ª intervención.",
+                    "El equipo de alarma y evacuación.",
+                    "Los bomberos."
+                ],
+                correct: 0  // A)
+            },
+            {
+                question: "8. Al llegar el equipo arriba indicado, observan donde está el incendio. En esos momentos consideran que es un conato de incendio (pequeño fuego localizado en una mesa de madera de oficina), intentan sofocarlo con un extintor, ¿qué clase de fuego es?:",
+                options: [
+                    "Clase A: Fuegos de materiales sólidos, generalmente de naturaleza orgánica, cuya combustión se realiza normalmente con la formación de brasas.",
+                    "Clase C: Fuegos de gases.",
+                    "Clase D: Fuegos de metales."
+                ],
+                correct: 0  // A)
+            },
+            {
+                question: "9. Una vez llegado al punto donde está el supuestamente conato de incendio, lo intentan apagar con un extintor de polvo A, B, C, al más común en los edificios. Se consideran extintores portátiles a aquellos cuyo peso máximo no exceda de:",
+                options: [
+                    "10 kilos.",
+                    "20 kilos.",
+                    "30 kilos."
+                ],
+                correct: 1  // B)
+            },
+            {
+                question: "10. Vista la incidencia por el equipo correspondiente y no poder sofocar el conato de incendio, informan al jefe de emergencia (Encargado de Edificios y Dependencias), de que hay que evacuar. La alarma de evacuación es activada, los asistentes son evacuados y en el recorrido de la evacuación observan diferentes señales, ¿de qué color son las señales de advertencia?:",
+                options: [
+                    "Verdes.",
+                    "Amarillas.",
+                    "Azules."
+                ],
+                correct: 1  // B)
+            },
+            {
+                question: "11. Según el Real Decreto 485/1997, sobre disposiciones mínimas en materia de señalización de seguridad y salud en el trabajo, otorga un color a la señalización de salvamento y socorro que será:",
+                options: [
+                    "Pictograma blanco sobre fondo verde.",
+                    "Pictograma blanco sobre fondo azul.",
+                    "Pictograma negro sobre fondo blanco."
+                ],
+                correct: 0  // A)
+            },
+            {
+                question: "12. Una vez que es evacuado todo el mundo y salen a la calle por las diferentes puertas existentes en el edificio, los equipos encargados de evacuación tienen que dirigir a las personas, ¿hacia dónde?:",
+                options: [
+                    "Quedarse justo al lado del edificio.",
+                    "Al punto de encuentro establecido para ello.",
+                    "Cruzarse a la acera de enfrente y observar que pasa."
+                ],
+                correct: 1  // B)
+            },
+            {
+                question: "13. Terminada la evacuación y declarando seguro el lugar, se da la orden para volver al puesto de trabajo. En ese momento llegan las sacas del correo procedente de la Oficina de Correo Interno Municipal, ¿dónde se encuentra dicha oficina?:",
+                options: [
+                    "Calle Albarracín, 39.",
+                    "Calle Albarracín, 41.",
+                    "Calle Albarracín, 33."
+                ],
+                correct: 2  // C)
+            },
+            {
+                question: "14. Cuando tuvieron que evacuar el edificio se estaba preparando toda la correspondencia. El correo que se produce dentro del ámbito municipal y que circula entre sus sedes municipales, geográficamente dispersas en la ciudad de Madrid se denomina:",
+                options: [
+                    "Correo interno.",
+                    "Correo externo.",
+                    "Valija Diplomática."
+                ],
+                correct: 0  // A)
+            },
+            {
+                question: "15. Días antes del acto solemne, usted como encargado/da de edificios y dependencias hace una inspección por los sitios donde pasará el Alcalde con el Jefe de estado y las personalidades invitadas. Esa inspección la realizará acompañado por un oficial/a de edificios y dependencias y un P.O.S.I (personal de oficios servicios internos). En esta inspección se percatan de que hay una serie de cajas entorpeciendo el recorrido y les dice que hay que quitarlas de ahí, ¿cuál es el peso máximo que se recomienda no sobrepasar en condiciones ideales de manipulación, en hombres entre 20 y 45 años de edad?:",
+                options: [
+                    "10 kilos.",
+                    "5 kilos.",
+                    "25 kilos."
+                ],
+                correct: 2  // C)
+            },
+            {
+                question: "16. Las cajas retiradas del recorrido que harán las personalidades se tienen que colocar en un almacén habilitado para ello, ¿a qué altura no se deben manejar cargas?:",
+                options: [
+                    "Por encima de 200 cm.",
+                    "Por encima de 190 cm.",
+                    "Por encima de 175 cm."
+                ],
+                correct: 2  // C)
+            }
+        ];
+
+        let currentQuestion = 0;
+        let answers = new Array(questions.length).fill(null);
+
+        let timerInterval;
+        // Ajuste a 20 minutos en segundos:
+        let timeLeft = 20 * 60;
+
+        function initializeQuiz() {
+            loadQuestion();
+            updateProgressBar();
+            document.getElementById('nextButton').addEventListener('click', handleNextButton);
+            startTimer();
+        }
+
+        function startTimer() {
+            updateTimerDisplay();
+            timerInterval = setInterval(() => {
+                timeLeft--;
+                if (timeLeft < 0) {
+                    clearInterval(timerInterval);
+                    document.getElementById('nextButton').disabled = true;
+                    showResults(true);
+                } else {
+                    updateTimerDisplay();
+                }
+            }, 1000);
+        }
+
+        function updateTimerDisplay() {
+            const minutes = Math.floor(timeLeft / 60);
+            const seconds = timeLeft % 60;
+            const mm = String(minutes).padStart(2, '0');
+            const ss = String(seconds).padStart(2, '0');
+            document.getElementById('timer').textContent = `Tiempo restante: ${mm}:${ss}`;
+        }
+
+        function loadQuestion() {
+            const container = document.getElementById('questionContainer');
+            const question = questions[currentQuestion];
+
+            let html = `
+                <div class="question active">
+                    <p>${question.question}</p>
+                    <div class="options">
+                        ${question.options.map((option, index) => {
+                            const letra = String.fromCharCode(65 + index);
+                            return `
+                                <div class="option ${answers[currentQuestion] === index ? 'selected' : ''}" onclick="selectOption(${index})">
+                                    <strong>${letra})</strong> ${option}
+                                </div>
+                            `;
+                        }).join('')}
+                    </div>
+                </div>
+            `;
+            container.innerHTML = html;
+        }
+
+        function selectOption(index) {
+            answers[currentQuestion] = index;
+            document.querySelectorAll('.option').forEach((optionEl, i) => {
+                optionEl.classList.toggle('selected', i === index);
+            });
+        }
+
+        function updateProgressBar() {
+            const progress = ((currentQuestion + 1) / questions.length) * 100;
+            document.querySelector('.progress').style.width = `${progress}%`;
+        }
+
+        function calculateScore() {
+            let score = 0;
+            answers.forEach((answer, index) => {
+                if (answer === null) return;
+                if (answer === questions[index].correct) {
+                    score += 1;
+                } else {
+                    score -= 1/3;
+                }
+            });
+            return Math.round(score * 100) / 100;
+        }
+
+        function handleNextButton() {
+            if (currentQuestion < questions.length - 1) {
+                currentQuestion++;
+                loadQuestion();
+                updateProgressBar();
+                if (currentQuestion === questions.length - 1) {
+                    document.getElementById('nextButton').textContent = 'Finalizar';
+                }
+            } else {
+                clearInterval(timerInterval);
+                showResults(false);
+            }
+        }
+
+        /**
+         * byTimeout: boolean, indica si se llama por fin de tiempo
+         */
+        function showResults(byTimeout) {
+            // Ocultar preguntas, botón, barra de progreso y temporizador
+            document.getElementById('questionContainer').style.display = 'none';
+            document.getElementById('nextButton').style.display = 'none';
+            document.getElementById('timer').style.display = 'none';
+            document.querySelector('.progress-bar').style.display = 'none';
+
+            const score = calculateScore();
+            const totalQuestions = questions.length;
+            // Nota sobre 10: normalizamos score / totalQuestions * 10, limitamos [0,10]
+            let rawNota = (score / totalQuestions) * 10;
+            if (isNaN(rawNota)) rawNota = 0;
+            if (rawNota < 0) rawNota = 0;
+            if (rawNota > 10) rawNota = 10;
+            const notaSobre10 = Math.round(rawNota * 100) / 100;
+
+            const correctCount = answers.filter((answer, index) => answer === questions[index].correct).length;
+            const incorrectIndices = answers
+                .map((answer, index) => (answer !== null && answer !== questions[index].correct) ? index : -1)
+                .filter(i => i >= 0);
+            const unansweredIndices = answers
+                .map((answer, index) => (answer === null) ? index : -1)
+                .filter(i => i >= 0);
+
+            const resultDiv = document.getElementById('result');
+            let html = `<h2>Resultado Final</h2>`;
+            if (byTimeout) {
+                html += `<p>El tiempo ha expirado. Se muestran los resultados obtenidos hasta ahora:</p>`;
+            }
+            html += `
+                <p>Tu puntuación: ${score} puntos</p>
+                <p>Nota sobre 10: ${notaSobre10} / 10</p>
+                <p>Respuestas correctas: ${correctCount}</p>
+                <p>Respuestas incorrectas: ${incorrectIndices.length}</p>
+                <p>Sin responder: ${unansweredIndices.length}</p>
+            `;
+
+            // Listar incorrectas
+            if (incorrectIndices.length > 0) {
+                html += `<div class="incorrect-list"><h3>Preguntas incorrectas:</h3><ul>`;
+                incorrectIndices.forEach(idx => {
+                    const q = questions[idx];
+                    const tuIdx = answers[idx];
+                    const tuRespuesta = q.options[tuIdx];
+                    const correcta = q.options[q.correct];
+                    const letraTu = String.fromCharCode(65 + tuIdx);
+                    const letraCorrecta = String.fromCharCode(65 + q.correct);
+                    html += `<li>
+                        <strong>Pregunta ${idx + 1}:</strong> ${q.question}<br>
+                        Tu respuesta: <strong>${letraTu})</strong> ${tuRespuesta}<br>
+                        Respuesta correcta: <strong>${letraCorrecta})</strong> ${correcta}
+                    </li>`;
+                });
+                html += `</ul></div>`;
+            }
+            // Listar sin responder
+            if (unansweredIndices.length > 0) {
+                html += `<div class="unanswered-list"><h3>Preguntas sin responder:</h3><ul>`;
+                unansweredIndices.forEach(idx => {
+                    const q = questions[idx];
+                    html += `<li><strong>Pregunta ${idx + 1}:</strong> ${q.question}</li>`;
+                });
+                html += `</ul></div>`;
+            }
+
+            resultDiv.innerHTML = html;
+            resultDiv.style.display = 'block';
+        }
+
+        // Iniciar quiz al cargar
+        initializeQuiz();
+    </script>
+</body>
+</html>
